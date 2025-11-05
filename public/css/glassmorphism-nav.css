@@ -1,0 +1,188 @@
+/* ===== Glassmorphism Floating Navigation Bar ===== */
+
+.floating-nav {
+    position: fixed;
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(32px) saturate(180%) brightness(1.1);
+    -webkit-backdrop-filter: blur(32px) saturate(180%) brightness(1.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50px;
+    box-shadow:
+        0 8px 32px 0 rgba(44, 36, 22, 0.12),
+        0 2px 8px 0 rgba(44, 36, 22, 0.08),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.5),
+        inset 0 -1px 0 0 rgba(255, 255, 255, 0.2);
+    opacity: 0;
+    max-width: min(90vw, 600px);
+    width: auto;
+    transition: none;
+}
+
+.floating-nav.visible {
+    animation: slideDownNav 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes slideDownNav {
+    0% {
+        top: -100px;
+        opacity: 0;
+        transform: translateX(-50%);
+    }
+    100% {
+        top: 2rem;
+        opacity: 1;
+        transform: translateX(-50%);
+    }
+}
+
+/* Navigation container */
+.nav-container {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    position: relative;
+    padding: 4px;
+}
+
+/* Active indicator blob */
+.nav-blob {
+    position: absolute;
+    height: 36px;
+    background: var(--accent);
+    border-radius: 25px;
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 0;
+    box-shadow:
+        0 4px 12px rgba(139, 111, 71, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* Navigation items */
+.nav-dot-link {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: transparent;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.nav-dot-circle {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.5;
+    transition: all 0.3s ease;
+}
+
+.nav-dot-link:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.nav-dot-link:hover .nav-dot-circle {
+    opacity: 0.8;
+    transform: scale(1.2);
+}
+
+.nav-dot-link.active {
+    color: white;
+}
+
+.nav-dot-link.active .nav-dot-circle {
+    opacity: 1;
+    transform: scale(1.3);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .floating-nav {
+        top: -100px;
+        padding: 6px;
+        max-width: calc(100vw - 2rem);
+    }
+
+    .floating-nav.visible {
+        animation: slideDownNavMobile 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    @keyframes slideDownNavMobile {
+        0% {
+            top: -100px;
+            opacity: 0;
+            transform: translateX(-50%);
+        }
+        100% {
+            top: 1rem;
+            opacity: 1;
+            transform: translateX(-50%);
+        }
+    }
+
+    .nav-dot-link {
+        font-size: 0.75rem;
+        padding: 6px 12px;
+    }
+
+    .nav-blob {
+        height: 32px;
+    }
+
+    .nav-container {
+        gap: 2px;
+        padding: 3px;
+    }
+
+    .nav-dot-circle {
+        width: 5px;
+        height: 5px;
+    }
+
+    .nav-label {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-dot-link {
+        font-size: 0.7rem;
+        padding: 5px 10px;
+        gap: 4px;
+    }
+
+    .nav-blob {
+        height: 28px;
+    }
+
+    .nav-dot-circle {
+        width: 4px;
+        height: 4px;
+    }
+}
+
+/* Section spacing for proper scroll tracking */
+.fullpage-section {
+    scroll-margin-top: 120px; /* Отступ при скролле к секции */
+}
+
+@media (max-width: 768px) {
+    .fullpage-section {
+        scroll-margin-top: 100px; /* Отступ на мобильной */
+    }
+}
