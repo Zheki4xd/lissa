@@ -1447,6 +1447,29 @@ h3 {
     }
 }
 
+/* ===================================
+   DESKTOP: Скрываем кнопку развёртывания
+   =================================== */
+@media (min-width: 1024px) {
+    /* Скрываем кнопку "Читать далее" на десктопе */
+    .portfolio-expand-btn {
+        display: none !important;
+    }
+
+    /* Показываем весь текст без обрезки */
+    .portfolio-description {
+        display: block !important;
+        -webkit-line-clamp: unset !important;
+        overflow: visible !important;
+        max-height: none !important;
+    }
+
+    .portfolio-description-wrapper .portfolio-description {
+        display: block !important;
+        -webkit-line-clamp: unset !important;
+    }
+}
+
 /* Индикаторы точек для планшетов (на мобильных и ПК - стрелки) */
 .portfolio-carousel-dots {
     display: none; /* По умолчанию скрыты */

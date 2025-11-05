@@ -256,6 +256,9 @@ function translatePage(lang) {
         }
     });
 
+    // Update "Read more" buttons in portfolio
+    updateExpandButtonsLanguage(lang);
+
     // Update language switcher
     updateLangSwitcher(lang);
 
@@ -324,3 +327,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+// Function to update "Read more" / "Collapse" buttons when language changes
+function updateExpandButtonsLanguage(lang) {
+    const expandButtons = document.querySelectorAll('.portfolio-expand-btn .expand-text');
+    const readMoreText = translations[lang]?.portfolio?.readMore || 'Read more';
+    const collapseText = translations[lang]?.portfolio?.collapse || 'Collapse';
+
+    expandButtons.forEach(button => {
+        const wrapper = button.closest('.portfolio-description-wrapper');
+        const isExpanded = wrapper?.classList.contains('expanded');
+
+        // Update text based on current state
+        button.textContent = isExpanded ? collapseText : readMoreText;
+    });
+}

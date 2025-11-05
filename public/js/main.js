@@ -128,7 +128,7 @@ async function loadPortfolio() {
                     <div class="portfolio-description-wrapper">
                         <p class="portfolio-description" data-full-text="${description.replace(/"/g, '&quot;')}">${description}</p>
                         <button class="portfolio-expand-btn" onclick="toggleProjectDescription(${index})">
-                            <span class="expand-text" data-translate="portfolio.readMore">Читать далее</span>
+                            <span class="expand-text">${translations[currentLang]?.portfolio?.readMore || 'Read more'}</span>
                             <svg class="expand-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polyline points="6 9 12 15 18 9"></polyline>
                             </svg>
