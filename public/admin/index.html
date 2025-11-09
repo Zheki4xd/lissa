@@ -273,29 +273,6 @@
             transition: all 0.3s ease;
         }
 
-        .contacts-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
-
-        .contacts-table th,
-        .contacts-table td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .contacts-table th {
-            background: var(--bg-secondary);
-            color: var(--accent);
-            font-weight: 600;
-        }
-
-        .contacts-table tr:hover {
-            background: var(--bg-secondary);
-        }
-
         .modal {
             display: none;
             position: fixed;
@@ -545,15 +522,70 @@
             .portfolio-grid {
                 grid-template-columns: 1fr;
             }
+        }
 
-            .contacts-table {
-                font-size: 0.875rem;
-            }
+        /* NEW: Multiple images support styles */
+        .image-count-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(139, 111, 71, 0.9);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            z-index: 5;
+        }
 
-            .contacts-table th,
-            .contacts-table td {
-                padding: 0.5rem;
-            }
+        .image-number {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            font-weight: 600;
+            z-index: 5;
+        }
+
+        .new-badge {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            background: #10b981;
+            color: white;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            z-index: 5;
+        }
+
+        .no-images-text {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 2rem;
+            font-style: italic;
+        }
+
+        #aboutCardImagePreview {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        #aboutCardImagePreview .image-preview-item {
+            aspect-ratio: 1;
+            position: relative;
         }
     </style>
 </head>
@@ -586,7 +618,6 @@
             <div class="tabs">
                 <div class="tab active" onclick="switchTab('portfolio')">Портфолио</div>
                 <div class="tab" onclick="switchTab('about')">О нас</div>
-                <div class="tab" onclick="switchTab('contacts')">Сообщения</div>
             </div>
 
             <!-- Portfolio Tab -->
@@ -601,22 +632,6 @@
                 <h2>Управление карточками "О нас"</h2>
                 <button class="btn btn-success" onclick="openAddAboutCardModal()" style="margin-top: 1rem; width: auto;">+ Добавить карточку</button>
                 <div class="portfolio-grid" id="aboutCardsGrid"></div>
-            </div>
-
-            <!-- Contacts Tab -->
-            <div class="tab-content" id="contacts-tab">
-                <h2>Сообщения от клиентов</h2>
-                <table class="contacts-table">
-                    <thead>
-                        <tr>
-                            <th>Дата</th>
-                            <th>Имя</th>
-                            <th>Телефон</th>
-                            <th>Сообщение</th>
-                        </tr>
-                    </thead>
-                    <tbody id="contactsTable"></tbody>
-                </table>
             </div>
         </div>
     </div>

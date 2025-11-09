@@ -61,7 +61,6 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             localStorage.setItem('adminLoggedIn', 'true');
             showAdminPanel();
             loadPortfolio();
-            loadContacts();
         } else {
             showError('loginError', data.error || 'Ошибка входа');
         }
@@ -81,7 +80,6 @@ function showAdminPanel() {
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('adminPanel').style.display = 'block';
     loadPortfolio();
-    loadContacts();
 }
 
 // Logout
@@ -152,33 +150,6 @@ async function loadPortfolio() {
     } catch (error) {
         console.error('Error loading portfolio:', error);
         document.getElementById('portfolioGrid').innerHTML = '<p>Ошибка загрузки портфолио.</p>';
-    }
-}
-
-// Load contact messages
-async function loadContacts() {
-    try {
-        const response = await apiFetch(`${API_BASE_URL}/api/contacts`);
-        const contacts = await response.json();
-
-        const table = document.getElementById('contactsTable');
-
-        if (contacts.length === 0) {
-            table.innerHTML = '<tr><td colspan="4" style="text-align: center;">Пока нет сообщений.</td></tr>';
-            return;
-        }
-
-        table.innerHTML = contacts.map(contact => `
-            <tr>
-                <td>${new Date(contact.created_at).toLocaleString()}</td>
-                <td>${contact.name}</td>
-                <td>${contact.phone}</td>
-                <td>${contact.message}</td>
-            </tr>
-        `).join('');
-    } catch (error) {
-        console.error('Error loading contacts:', error);
-        document.getElementById('contactsTable').innerHTML = '<tr><td colspan="4" style="text-align: center;">Ошибка загрузки сообщений.</td></tr>';
     }
 }
 

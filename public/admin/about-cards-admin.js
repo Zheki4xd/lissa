@@ -19,7 +19,7 @@ async function loadAboutCards() {
         grid.innerHTML = items.map(item => {
             const title = item.title_ru || item.title || 'Без названия';
             const description = item.description_ru || item.description || '';
-            const imageUrl = item.image || '/placeholder.jpg';
+            const imageUrl = item.image ? `${API_BASE_URL}${item.image}` : '/placeholder.jpg';
 
             return `
                 <div class="portfolio-card" draggable="true" data-item-id="${item.id}">
@@ -28,7 +28,7 @@ async function loadAboutCards() {
                         <span class="drag-handle-card">⋮⋮</span>
                     </div>
                     <h3>${title}</h3>
-                    <p>${description}</p>
+                    <p>${description.substring(0, 100)}${description.length > 100 ? '...' : ''}</p>
                     <div class="actions">
                         <button class="btn-success" onclick="editAboutCard(${item.id})">Редактировать</button>
                         <button class="btn-danger" onclick="deleteAboutCard(${item.id})">Удалить</button>
@@ -144,7 +144,7 @@ async function editAboutCard(id) {
             const preview = document.getElementById('aboutCardImagePreview');
             preview.innerHTML = `
                 <div class="image-preview-item">
-                    <img src="${item.image}" alt="Preview">
+                    <img src="${API_BASE_URL}${item.image}" alt="Preview">
                     <button type="button" class="remove-image" onclick="removeAboutCardImage()">&times;</button>
                 </div>
             `;

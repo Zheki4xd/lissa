@@ -665,7 +665,12 @@ async function loadAboutCards() {
                     ` : ''}
                     <div class="about-card-content">
                         <h3 class="about-card-title">${title}</h3>
-                        <p class="about-card-description">${description}</p>
+                        <p class="about-card-description collapsed" data-card-index="${index}">${description}</p>
+                        <button class="about-card-expand-btn" data-card-index="${index}" onclick="toggleAboutCardDescription(${index})">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
                     </div>
                     ${imagePosition === 'right' && imageUrl ? `
                         <div class="about-card-image">
@@ -692,6 +697,15 @@ async function loadAboutCards() {
         // Show first card
         updateAboutCarousel();
         updateAboutNavButtons();
+
+        // Обновляем при изменении размера окна (поворот экрана)
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                updateAboutCarousel();
+            }, 100);
+        });
     } catch (error) {
         console.error('Error loading about cards:', error);
         document.getElementById('aboutCarousel').innerHTML = '<p class="about-placeholder">Ошибка загрузки карточек.</p>';
@@ -702,23 +716,32 @@ function updateAboutCarousel() {
     const cards = document.querySelectorAll('.about-card');
     const dots = document.querySelectorAll('.about-dot');
 
-    cards.forEach((card, index) => {
-        if (index === aboutCurrentIndex) {
+    // Проверяем ширину экрана
+    const isMobile = window.innerWidth <= 767;
+
+    if (isMobile) {
+        // На мобилке показываем ВСЕ карточки (Instagram-style)
+        cards.forEach((card) => {
             card.classList.add('active');
-        } else {
-            card.classList.remove('active');
-        }
-    });
+        });
+    } else {
+        // На десктопе показываем только активную карточку (карусель)
+        cards.forEach((card, index) => {
+            if (index === aboutCurrentIndex) {
+                card.classList.add('active');
+            } else {
+                card.classList.remove('active');
+            }
+        });
 
-    dots.forEach((dot, index) => {
-        if (index === aboutCurrentIndex) {
-            dot.classList.add('active');
-        } else {
-            dot.classList.remove('active');
-        }
-    });
-
-    // Не используем transform - карточки переключаются через display: none/grid
+        dots.forEach((dot, index) => {
+            if (index === aboutCurrentIndex) {
+                dot.classList.add('active');
+            } else {
+                dot.classList.remove('active');
+            }
+        });
+    }
 }
 
 function updateAboutNavButtons() {
@@ -735,6 +758,22 @@ function goToAboutCard(index) {
     aboutCurrentIndex = Math.max(0, Math.min(index, aboutCards.length - 1));
     updateAboutCarousel();
     updateAboutNavButtons();
+}
+
+// Функция для переключения показа полного описания карточки
+function toggleAboutCardDescription(index) {
+    const description = document.querySelector(`.about-card-description[data-card-index="${index}"]`);
+    const button = document.querySelector(`.about-card-expand-btn[data-card-index="${index}"]`);
+
+    if (description && button) {
+        if (description.classList.contains('collapsed')) {
+            description.classList.remove('collapsed');
+            button.classList.add('expanded');
+        } else {
+            description.classList.add('collapsed');
+            button.classList.remove('expanded');
+        }
+    }
 }
 
 // Navigation buttons
