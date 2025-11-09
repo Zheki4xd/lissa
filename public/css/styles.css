@@ -428,6 +428,7 @@ h3 {
     border-radius: 16px;
     border: 2px solid var(--border);
     box-shadow: 0 4px 16px var(--shadow);
+    max-height: 500px; /* Ограничиваем высоту */
 }
 
 .about-card.active {
@@ -439,6 +440,7 @@ h3 {
     border-radius: 12px;
     overflow: hidden;
     aspect-ratio: 4 / 3;
+    max-height: 400px; /* Ограничиваем высоту фото */
 }
 
 .about-card-image img {
@@ -454,21 +456,48 @@ h3 {
 
 .about-card-content {
     padding: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    max-height: 400px; /* Ограничиваем высоту текстового блока */
+    overflow: hidden;
 }
 
 .about-card-title {
     color: var(--accent);
-    font-size: 1.75rem;
+    font-size: 1.5rem; /* Уменьшили размер */
     font-weight: 700;
-    margin-bottom: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
     font-family: var(--font-serif);
+    line-height: 1.3;
 }
 
 .about-card-description {
     color: var(--text-secondary);
-    font-size: 1.1rem;
-    line-height: 1.8;
+    font-size: 1rem; /* Уменьшили размер */
+    line-height: 1.6;
     white-space: pre-wrap;
+    overflow-y: auto; /* Добавим прокрутку если текст длинный */
+    flex: 1;
+    padding-right: 10px;
+}
+
+/* Стилизуем скроллбар */
+.about-card-description::-webkit-scrollbar {
+    width: 6px;
+}
+
+.about-card-description::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+    border-radius: 3px;
+}
+
+.about-card-description::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 3px;
+}
+
+.about-card-description::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-hover);
 }
 
 /* Image on right side */
