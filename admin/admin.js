@@ -126,7 +126,7 @@ async function loadPortfolio() {
             const firstImage = item.images[0] || '/placeholder.jpg';
             const imageCount = item.images.length;
 
-            // Use Russian as primary, fallback to Czech
+            // Use Russian as primary, fallback to Montenegrin
             const title = item.title_ru || item.title || 'Без названия';
             const description = item.description_ru || item.description || '';
 
@@ -202,7 +202,7 @@ function closeModal() {
     currentEditId = null;
 
     // Reset translation sections
-    ['cs', 'en', 'uk'].forEach(lang => {
+    ['me', 'en', 'uk'].forEach(lang => {
         const section = document.getElementById(`translation-${lang}`);
         const button = document.querySelector(`.translation-toggle[data-lang="${lang}"]`);
         if (section) section.style.display = 'none';
@@ -225,16 +225,16 @@ async function editItem(id) {
         document.getElementById('title_ru').value = item.title_ru || '';
         document.getElementById('description_ru').value = item.description_ru || '';
 
-        // Czech
+        // Montenegrin
         document.getElementById('title').value = item.title || '';
         document.getElementById('description').value = item.description || '';
-        // Show Czech section if there's actual content (not empty string)
+        // Show Montenegrin section if there's actual content (not empty string)
         if ((item.title && item.title.trim() !== '') || (item.description && item.description.trim() !== '')) {
-            const csSection = document.getElementById('translation-cs');
-            const csButton = document.querySelector('.translation-toggle[data-lang="cs"]');
-            csSection.style.display = 'block';
-            csButton.classList.add('active');
-            csButton.innerHTML = csButton.innerHTML.replace('+ ', '✓ ').replace('Добавить перевод', 'Перевод добавлен');
+            const meSection = document.getElementById('translation-me');
+            const meButton = document.querySelector('.translation-toggle[data-lang="me"]');
+            meSection.style.display = 'block';
+            meButton.classList.add('active');
+            meButton.innerHTML = meButton.innerHTML.replace('+ ', '✓ ').replace('Перевод добавлен', 'Перевод добавлен');
         }
 
         // English
@@ -495,13 +495,13 @@ document.getElementById('portfolioForm').addEventListener('submit', async (e) =>
     formData.append('title_ru', document.getElementById('title_ru').value);
     formData.append('description_ru', document.getElementById('description_ru').value);
 
-    // Czech - only if section is visible
-    const csSection = document.getElementById('translation-cs');
-    if (csSection && csSection.style.display !== 'none') {
+    // Montenegrin - only if section is visible
+    const meSection = document.getElementById('translation-me');
+    if (meSection && meSection.style.display !== 'none') {
         formData.append('title', document.getElementById('title').value);
         formData.append('description', document.getElementById('description').value);
     } else {
-        // Clear Czech fields if section is hidden
+        // Clear Montenegrin fields if section is hidden
         formData.append('title', '');
         formData.append('description', '');
     }

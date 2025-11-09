@@ -138,6 +138,30 @@ function initDatabase() {
             });
         }
     });
+
+    // About cards table with multilingual support
+    db.run(`
+        CREATE TABLE IF NOT EXISTS about_cards (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            description TEXT,
+            title_ru TEXT,
+            description_ru TEXT,
+            title_en TEXT,
+            description_en TEXT,
+            title_uk TEXT,
+            description_uk TEXT,
+            image TEXT,
+            priority INTEGER DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `, (err) => {
+        if (err) {
+            console.error('Error creating about_cards table:', err);
+        } else {
+            console.log('✅ About cards table ready');
+        }
+    });
 }
 
 // Configure multer for multiple file uploads
@@ -434,6 +458,174 @@ app.put('/api/portfolio/:id/reorder', (req, res) => {
             res.json({ message: 'Images reordered successfully' });
         }
     );
+});
+
+// ===== ABOUT CARDS API =====
+
+// Get all about cards
+app.get('/api/about-cards', (req, res) => {
+    db.all('SELECT * FROM about_cards ORDER BY priority ASC', [], (err, rows) => {
+        if (err) {
+            console.error('Error fetching about cards:', err);
+            return res.status(500).json({ error: 'Failed to fetch about cards' });
+        }
+        res.json(rows);
+    });
+});
+
+// Get single about card
+app.get('/api/about-cards/:id', (req, res) => {
+    const { id } = req.params;
+    db.get('SELECT * FROM about_cards WHERE id = ?', [id], (err, row) => {
+        if (err) {
+            console.error('Error fetching about card:', err);
+            return res.status(500).json({ error: 'Failed to fetch about card' });
+        }
+        if (!row) {
+            return res.status(404).json({ error: 'About card not found' });
+        }
+        res.json(row);
+    });
+});
+
+// Create new about card
+app.post('/api/about-cards', upload.single('image'), (req, res) => {
+    const { title, description, title_ru, description_ru, title_en, description_en, title_uk, description_uk } = req.body;
+
+    if (!title_ru) {
+        return res.status(400).json({ error: 'Russian title is required' });
+    }
+
+    const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
+
+    db.run(
+        `INSERT INTO about_cards (title, description, title_ru, description_ru, title_en, description_en, title_uk, description_uk, image)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [title || '', description || '', title_ru, description_ru || '', title_en || '', description_en || '', title_uk || '', description_uk || '', imageUrl],
+        function(err) {
+            if (err) {
+                console.error('Error creating about card:', err);
+                return res.status(500).json({ error: 'Failed to create about card' });
+            }
+            res.json({ id: this.lastID, message: 'About card created successfully' });
+        }
+    );
+});
+
+// Update about card
+app.put('/api/about-cards/:id', upload.single('image'), (req, res) => {
+    const { id } = req.params;
+    const { title, description, title_ru, description_ru, title_en, description_en, title_uk, description_uk, removeImage } = req.body;
+
+    // Get current card to handle image deletion
+    db.get('SELECT * FROM about_cards WHERE id = ?', [id], (err, currentCard) => {
+        if (err) {
+            console.error('Error fetching about card:', err);
+            return res.status(500).json({ error: 'Failed to fetch about card' });
+        }
+        if (!currentCard) {
+            return res.status(404).json({ error: 'About card not found' });
+        }
+
+        let imageUrl = currentCard.image;
+
+        // Handle image deletion
+        if (removeImage === 'true' && currentCard.image) {
+            const imagePath = path.join(__dirname, '../public', currentCard.image);
+            if (fs.existsSync(imagePath)) {
+                fs.unlinkSync(imagePath);
+            }
+            imageUrl = null;
+        }
+
+        // Handle new image upload
+        if (req.file) {
+            // Delete old image if exists
+            if (currentCard.image) {
+                const oldImagePath = path.join(__dirname, '../public', currentCard.image);
+                if (fs.existsSync(oldImagePath)) {
+                    fs.unlinkSync(oldImagePath);
+                }
+            }
+            imageUrl = `/uploads/${req.file.filename}`;
+        }
+
+        db.run(
+            `UPDATE about_cards SET
+                title = ?, description = ?, title_ru = ?, description_ru = ?,
+                title_en = ?, description_en = ?, title_uk = ?, description_uk = ?, image = ?
+             WHERE id = ?`,
+            [title || '', description || '', title_ru, description_ru || '', title_en || '', description_en || '', title_uk || '', description_uk || '', imageUrl, id],
+            function(err) {
+                if (err) {
+                    console.error('Error updating about card:', err);
+                    return res.status(500).json({ error: 'Failed to update about card' });
+                }
+                if (this.changes === 0) {
+                    return res.status(404).json({ error: 'About card not found' });
+                }
+                res.json({ message: 'About card updated successfully' });
+            }
+        );
+    });
+});
+
+// Delete about card
+app.delete('/api/about-cards/:id', (req, res) => {
+    const { id } = req.params;
+
+    // Get the card to delete its image
+    db.get('SELECT * FROM about_cards WHERE id = ?', [id], (err, card) => {
+        if (err) {
+            console.error('Error fetching about card:', err);
+            return res.status(500).json({ error: 'Failed to fetch about card' });
+        }
+        if (!card) {
+            return res.status(404).json({ error: 'About card not found' });
+        }
+
+        // Delete image file if exists
+        if (card.image) {
+            const imagePath = path.join(__dirname, '../public', card.image);
+            if (fs.existsSync(imagePath)) {
+                fs.unlinkSync(imagePath);
+            }
+        }
+
+        // Delete the card from database
+        db.run('DELETE FROM about_cards WHERE id = ?', [id], function(err) {
+            if (err) {
+                console.error('Error deleting about card:', err);
+                return res.status(500).json({ error: 'Failed to delete about card' });
+            }
+            res.json({ message: 'About card deleted successfully' });
+        });
+    });
+});
+
+// Reorder about cards
+app.post('/api/about-cards/reorder', (req, res) => {
+    const { order } = req.body; // Array of IDs in desired order
+
+    if (!Array.isArray(order)) {
+        return res.status(400).json({ error: 'Order must be an array of IDs' });
+    }
+
+    const updatePromises = order.map((id, index) => {
+        return new Promise((resolve, reject) => {
+            db.run('UPDATE about_cards SET priority = ? WHERE id = ?', [index, id], (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+    });
+
+    Promise.all(updatePromises)
+        .then(() => res.json({ message: 'About cards reordered successfully' }))
+        .catch(err => {
+            console.error('Error reordering about cards:', err);
+            res.status(500).json({ error: 'Failed to reorder about cards' });
+        });
 });
 
 // Submit contact form

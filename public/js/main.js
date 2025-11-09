@@ -627,6 +627,140 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// ===== ABOUT CARDS CAROUSEL =====
+
+let aboutCards = [];
+let aboutCurrentIndex = 0;
+
+async function loadAboutCards() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/about-cards`, {
+            headers: {
+                'ngrok-skip-browser-warning': 'true'
+            }
+        });
+        aboutCards = await response.json();
+
+        const container = document.getElementById('aboutCarousel');
+        const dotsContainer = document.getElementById('aboutDots');
+
+        if (aboutCards.length === 0) {
+            container.innerHTML = '<p class="about-placeholder">Пока нет карточек.</p>';
+            return;
+        }
+
+        // Render cards
+        container.innerHTML = aboutCards.map((card, index) => {
+            const title = getLocalizedText(card, 'title');
+            const description = getLocalizedText(card, 'description');
+            const imagePosition = index % 2 === 0 ? 'left' : 'right';
+
+            return `
+                <div class="about-card ${imagePosition === 'left' ? 'about-card-left' : 'about-card-right'}" data-index="${index}">
+                    ${imagePosition === 'left' && card.image ? `
+                        <div class="about-card-image">
+                            <img src="${card.image}" alt="${title}" draggable="false">
+                        </div>
+                    ` : ''}
+                    <div class="about-card-content">
+                        <h3 class="about-card-title">${title}</h3>
+                        <p class="about-card-description">${description}</p>
+                    </div>
+                    ${imagePosition === 'right' && card.image ? `
+                        <div class="about-card-image">
+                            <img src="${card.image}" alt="${title}" draggable="false">
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }).join('');
+
+        // Render dots
+        dotsContainer.innerHTML = aboutCards.map((_, index) =>
+            `<span class="about-dot ${index === 0 ? 'active' : ''}" data-index="${index}"></span>`
+        ).join('');
+
+        // Add event listeners for dots
+        dotsContainer.querySelectorAll('.about-dot').forEach(dot => {
+            dot.addEventListener('click', () => {
+                const index = parseInt(dot.dataset.index);
+                goToAboutCard(index);
+            });
+        });
+
+        // Show first card
+        updateAboutCarousel();
+        updateAboutNavButtons();
+    } catch (error) {
+        console.error('Error loading about cards:', error);
+        document.getElementById('aboutCarousel').innerHTML = '<p class="about-placeholder">Ошибка загрузки карточек.</p>';
+    }
+}
+
+function updateAboutCarousel() {
+    const cards = document.querySelectorAll('.about-card');
+    const dots = document.querySelectorAll('.about-dot');
+
+    cards.forEach((card, index) => {
+        if (index === aboutCurrentIndex) {
+            card.classList.add('active');
+        } else {
+            card.classList.remove('active');
+        }
+    });
+
+    dots.forEach((dot, index) => {
+        if (index === aboutCurrentIndex) {
+            dot.classList.add('active');
+        } else {
+            dot.classList.remove('active');
+        }
+    });
+
+    // Update carousel position
+    const container = document.getElementById('aboutCarousel');
+    const cardWidth = container.clientWidth;
+    container.style.transform = `translateX(-${aboutCurrentIndex * cardWidth}px)`;
+}
+
+function updateAboutNavButtons() {
+    const prevBtn = document.getElementById('aboutPrevBtn');
+    const nextBtn = document.getElementById('aboutNextBtn');
+
+    if (prevBtn && nextBtn) {
+        prevBtn.disabled = aboutCurrentIndex === 0;
+        nextBtn.disabled = aboutCurrentIndex === aboutCards.length - 1;
+    }
+}
+
+function goToAboutCard(index) {
+    aboutCurrentIndex = Math.max(0, Math.min(index, aboutCards.length - 1));
+    updateAboutCarousel();
+    updateAboutNavButtons();
+}
+
+// Navigation buttons
+document.addEventListener('DOMContentLoaded', () => {
+    const prevBtn = document.getElementById('aboutPrevBtn');
+    const nextBtn = document.getElementById('aboutNextBtn');
+
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            if (aboutCurrentIndex > 0) {
+                goToAboutCard(aboutCurrentIndex - 1);
+            }
+        });
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            if (aboutCurrentIndex < aboutCards.length - 1) {
+                goToAboutCard(aboutCurrentIndex + 1);
+            }
+        });
+    }
+});
+
 // ===== Раскрытие/сворачивание текста (как в Telegram) =====
 window.toggleProjectDescription = function(itemIndex) {
     const portfolioItem = document.querySelectorAll('.portfolio-item')[itemIndex];
@@ -709,6 +843,7 @@ window.closeProjectDetails = function() {
 // ===== Initialize =====
 document.addEventListener('DOMContentLoaded', () => {
     loadPortfolio();
+    loadAboutCards();
     initSmoothScroll(); // Initialize smooth scroll for CTA buttons
     // startAutoplay(); // Uncomment if you want auto-advancing carousel
 

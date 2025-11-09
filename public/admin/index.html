@@ -585,6 +585,7 @@
         <div class="container">
             <div class="tabs">
                 <div class="tab active" onclick="switchTab('portfolio')">Портфолио</div>
+                <div class="tab" onclick="switchTab('about')">О нас</div>
                 <div class="tab" onclick="switchTab('contacts')">Сообщения</div>
             </div>
 
@@ -593,6 +594,13 @@
                 <h2>Управление портфолио</h2>
                 <button class="btn btn-success" onclick="openAddModal()" style="margin-top: 1rem; width: auto;">+ Добавить проект</button>
                 <div class="portfolio-grid" id="portfolioGrid"></div>
+            </div>
+
+            <!-- About Cards Tab -->
+            <div class="tab-content" id="about-tab">
+                <h2>Управление карточками "О нас"</h2>
+                <button class="btn btn-success" onclick="openAddAboutCardModal()" style="margin-top: 1rem; width: auto;">+ Добавить карточку</button>
+                <div class="portfolio-grid" id="aboutCardsGrid"></div>
             </div>
 
             <!-- Contacts Tab -->
@@ -635,8 +643,8 @@
 
                 <!-- Translation buttons -->
                 <div style="margin: 1.5rem 0; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                    <button type="button" class="btn btn-secondary translation-toggle" data-lang="cs" onclick="toggleTranslation('cs')">
-                        + 🇨🇿 Добавить перевод на чешский
+                    <button type="button" class="btn btn-secondary translation-toggle" data-lang="me" onclick="toggleTranslation('me')">
+                        + 🇲🇪 Добавить перевод на черногорский
                     </button>
                     <button type="button" class="btn btn-secondary translation-toggle" data-lang="en" onclick="toggleTranslation('en')">
                         + 🇬🇧 Добавить перевод на английский
@@ -646,15 +654,15 @@
                     </button>
                 </div>
 
-                <!-- Czech translation (hidden by default) -->
-                <div id="translation-cs" class="translation-section" style="display: none;">
-                    <h3 style="color: var(--accent); margin-top: 1rem;">🇨🇿 Чешский</h3>
+                <!-- Montenegrin translation (hidden by default) -->
+                <div id="translation-me" class="translation-section" style="display: none;">
+                    <h3 style="color: var(--accent); margin-top: 1rem;">🇲🇪 Черногорский</h3>
                     <div class="form-group">
-                        <label for="title">Название проекта (CS)</label>
+                        <label for="title">Название проекта (ME)</label>
                         <input type="text" id="title">
                     </div>
                     <div class="form-group">
-                        <label for="description">Описание (CS)</label>
+                        <label for="description">Описание (ME)</label>
                         <textarea id="description" rows="3"></textarea>
                     </div>
                 </div>
@@ -705,7 +713,99 @@
         </div>
     </div>
 
+    <!-- Add/Edit About Card Modal -->
+    <div class="modal" id="aboutCardModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="aboutCardModalTitle">Добавить карточку</h2>
+                <button class="modal-close" onclick="closeAboutCardModal()">&times;</button>
+            </div>
+            <form id="aboutCardForm" enctype="multipart/form-data">
+                <input type="hidden" id="aboutCardId">
+
+                <h3 style="margin-top: 0; color: var(--accent);">🇷🇺 Русский (основной)</h3>
+                <div class="form-group">
+                    <label for="about_title_ru">Заголовок</label>
+                    <input type="text" id="about_title_ru" required>
+                </div>
+                <div class="form-group">
+                    <label for="about_description_ru">Описание</label>
+                    <textarea id="about_description_ru" rows="4"></textarea>
+                </div>
+
+                <!-- Translation buttons -->
+                <div style="margin: 1.5rem 0; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <button type="button" class="btn btn-secondary about-translation-toggle" data-lang="me" onclick="toggleAboutTranslation('me')">
+                        + 🇲🇪 Добавить перевод на черногорский
+                    </button>
+                    <button type="button" class="btn btn-secondary about-translation-toggle" data-lang="en" onclick="toggleAboutTranslation('en')">
+                        + 🇬🇧 Добавить перевод на английский
+                    </button>
+                    <button type="button" class="btn btn-secondary about-translation-toggle" data-lang="uk" onclick="toggleAboutTranslation('uk')">
+                        + 🇺🇦 Добавить перевод на украинский
+                    </button>
+                </div>
+
+                <!-- Montenegrin translation -->
+                <div id="about-translation-me" class="translation-section" style="display: none;">
+                    <h3 style="color: var(--accent); margin-top: 1rem;">🇲🇪 Черногорский</h3>
+                    <div class="form-group">
+                        <label for="about_title">Заголовок (ME)</label>
+                        <input type="text" id="about_title">
+                    </div>
+                    <div class="form-group">
+                        <label for="about_description">Описание (ME)</label>
+                        <textarea id="about_description" rows="4"></textarea>
+                    </div>
+                </div>
+
+                <!-- English translation -->
+                <div id="about-translation-en" class="translation-section" style="display: none;">
+                    <h3 style="color: var(--accent); margin-top: 1rem;">🇬🇧 Английский</h3>
+                    <div class="form-group">
+                        <label for="about_title_en">Заголовок (EN)</label>
+                        <input type="text" id="about_title_en">
+                    </div>
+                    <div class="form-group">
+                        <label for="about_description_en">Описание (EN)</label>
+                        <textarea id="about_description_en" rows="4"></textarea>
+                    </div>
+                </div>
+
+                <!-- Ukrainian translation -->
+                <div id="about-translation-uk" class="translation-section" style="display: none;">
+                    <h3 style="color: var(--accent); margin-top: 1rem;">🇺🇦 Украинский</h3>
+                    <div class="form-group">
+                        <label for="about_title_uk">Заголовок (UK)</label>
+                        <input type="text" id="about_title_uk">
+                    </div>
+                    <div class="form-group">
+                        <label for="about_description_uk">Описание (UK)</label>
+                        <textarea id="about_description_uk" rows="4"></textarea>
+                    </div>
+                </div>
+
+                <h3 style="color: var(--accent); margin-top: 1.5rem;">📸 Фотография</h3>
+                <div class="form-group">
+                    <input type="file" id="aboutCardImage" accept="image/*" style="display: none;">
+
+                    <div class="drop-zone" id="aboutCardDropZone">
+                        <div class="drop-zone-icon">📸</div>
+                        <div class="drop-zone-text">+ Добавить фото</div>
+                        <div class="drop-zone-hint">Перетащите сюда или кликните для выбора (JPEG, PNG, WebP до 10 МБ)</div>
+                    </div>
+
+                    <div class="image-preview-container">
+                        <div id="aboutCardImagePreview"></div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+            </form>
+        </div>
+    </div>
+
     <script src="/js/config.js"></script>
     <script src="/admin/admin.js"></script>
+    <script src="/admin/about-cards-admin.js"></script>
 </body>
 </html>

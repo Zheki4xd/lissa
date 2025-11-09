@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="Lissa - Ekskluzivni namještaj po mjeri. Kuhinje, ormari, biblioteke.">
     <title>Lissa | Namještaj po mjeri</title>
-    <link rel="stylesheet" href="css/styles.css?v=47">
+    <link rel="stylesheet" href="css/styles.css?v=49">
     <link rel="stylesheet" href="css/glassmorphism-nav.css?v=22">
 </head>
 <body>
@@ -125,6 +125,32 @@
             <h2 class="section-title" data-translate="about.title">O kompaniji Lissa D.O.O.</h2>
             <p class="section-subtitle" data-translate="about.subtitle">Profesionalna proizvodnja namještaja po mjeri</p>
 
+            <!-- About Cards Carousel -->
+            <div class="about-carousel-wrapper">
+                <div class="about-carousel-container" id="aboutCarousel">
+                    <!-- About cards will be loaded here dynamically -->
+                    <div class="about-placeholder">
+                        <p data-translate="about.loading">Učitavanje...</p>
+                    </div>
+                </div>
+
+                <!-- Navigation arrows -->
+                <button class="about-nav-btn about-nav-prev" id="aboutPrevBtn" aria-label="Previous">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </button>
+                <button class="about-nav-btn about-nav-next" id="aboutNextBtn" aria-label="Next">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+
+                <!-- Dots indicator -->
+                <div class="about-carousel-dots" id="aboutDots"></div>
+            </div>
+
+            <!-- Company Info (moved below carousel) -->
             <div class="about-content">
                 <div class="about-text">
                     <p data-translate="about.text1">
@@ -273,6 +299,6 @@
     <script src="js/config.js?v=10"></script>
     <script src="js/translations.js?v=12"></script>
     <script src="js/glassmorphism-nav.js?v=10"></script>
-    <script src="js/main.js?v=43"></script>
+    <script src="js/main.js?v=44"></script>
 </body>
 </html>
