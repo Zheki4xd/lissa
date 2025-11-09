@@ -408,39 +408,48 @@ h3 {
 .about-carousel-wrapper {
     position: relative;
     margin: var(--spacing-xl) 0;
-    overflow: hidden;
+    padding: 0 60px 60px 60px; /* Отступы для стрелок и точек */
+    overflow: visible; /* Изменили на visible */
 }
 
 .about-carousel-container {
-    display: flex;
-    transition: transform 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
-    gap: var(--spacing-md);
+    position: relative; /* Для позиционирования карточек */
+    width: 100%;
+    min-height: 450px; /* Минимальная высота контейнера */
 }
 
 .about-card {
-    min-width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
     display: none;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 45% 55%; /* Фото меньше, текст шире */
     gap: var(--spacing-xl);
-    align-items: center;
+    align-items: flex-start; /* Выравнивание сверху */
     background: white;
     padding: var(--spacing-xl);
     border-radius: 16px;
     border: 2px solid var(--border);
     box-shadow: 0 4px 16px var(--shadow);
-    max-height: 500px; /* Ограничиваем высоту */
+    min-height: 450px; /* Минимальная высота */
+    max-height: 600px; /* Максимальная высота */
+    opacity: 0;
+    transition: opacity 0.4s ease;
 }
 
 .about-card.active {
     display: grid;
+    opacity: 1;
 }
 
 .about-card-image {
     position: relative;
     border-radius: 12px;
     overflow: hidden;
-    aspect-ratio: 4 / 3;
-    max-height: 400px; /* Ограничиваем высоту фото */
+    width: 100%;
+    height: 100%; /* Фото на всю высоту карточки */
+    max-height: 550px;
 }
 
 .about-card-image img {
@@ -458,25 +467,25 @@ h3 {
     padding: var(--spacing-md);
     display: flex;
     flex-direction: column;
-    max-height: 400px; /* Ограничиваем высоту текстового блока */
+    height: 100%;
     overflow: hidden;
 }
 
 .about-card-title {
     color: var(--accent);
-    font-size: 1.5rem; /* Уменьшили размер */
+    font-size: 1.75rem; /* Увеличили обратно */
     font-weight: 700;
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
     font-family: var(--font-serif);
     line-height: 1.3;
 }
 
 .about-card-description {
     color: var(--text-secondary);
-    font-size: 1rem; /* Уменьшили размер */
-    line-height: 1.6;
+    font-size: 1.05rem; /* Чуть больше */
+    line-height: 1.7;
     white-space: pre-wrap;
-    overflow-y: auto; /* Добавим прокрутку если текст длинный */
+    overflow-y: auto;
     flex: 1;
     padding-right: 10px;
 }
@@ -536,11 +545,11 @@ h3 {
 }
 
 .about-nav-prev {
-    left: -24px;
+    left: 0;
 }
 
 .about-nav-next {
-    right: -24px;
+    right: 0;
 }
 
 .about-nav-btn svg {
@@ -1564,6 +1573,76 @@ h3 {
     /* Кнопка на мобильных с touch-action */
     .portfolio-expand-btn {
         touch-action: manipulation;
+    }
+
+    /* ===== ABOUT CARDS - МОБИЛЬНАЯ ВЕРСИЯ ===== */
+    .about-carousel-wrapper {
+        padding: 0 10px 50px 10px; /* Уменьшили отступы */
+    }
+
+    .about-carousel-container {
+        min-height: auto; /* Убираем фиксированную высоту на мобильных */
+        display: block; /* Убираем flex */
+    }
+
+    .about-card {
+        position: static !important; /* Статичное позиционирование - каждая карточка друг под другом */
+        top: auto !important;
+        left: auto !important;
+        width: 100% !important;
+        grid-template-columns: 1fr !important; /* Одна колонка */
+        min-height: auto;
+        max-height: none;
+        padding: var(--spacing-md);
+        gap: var(--spacing-md);
+        height: auto !important;
+        margin-bottom: var(--spacing-md); /* Отступ между карточками */
+    }
+
+    .about-card-image {
+        width: 100%;
+        height: auto !important;
+        aspect-ratio: 16 / 9; /* Широкое фото */
+        max-height: 250px !important;
+    }
+
+    .about-card-content {
+        padding: 0;
+        max-height: none;
+        height: auto !important;
+    }
+
+    .about-card-title {
+        font-size: 1.25rem;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .about-card-description {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        max-height: 300px; /* Увеличили высоту текста */
+        overflow-y: auto;
+    }
+
+    /* Стрелки на мобильных - меньше */
+    .about-nav-btn {
+        width: 40px;
+        height: 40px;
+    }
+
+    .about-nav-btn svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* Точки на мобильных */
+    .about-carousel-dots {
+        margin-top: var(--spacing-sm);
+    }
+
+    .about-dot {
+        width: 10px;
+        height: 10px;
     }
 
     /* Кнопки внутри карточек (переключение фото) - меньше на мобильных */

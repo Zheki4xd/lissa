@@ -654,21 +654,22 @@ async function loadAboutCards() {
             const title = getLocalizedText(card, 'title');
             const description = getLocalizedText(card, 'description');
             const imagePosition = index % 2 === 0 ? 'left' : 'right';
+            const imageUrl = card.image ? `${API_BASE_URL}${card.image}` : '';
 
             return `
                 <div class="about-card ${imagePosition === 'left' ? 'about-card-left' : 'about-card-right'}" data-index="${index}">
-                    ${imagePosition === 'left' && card.image ? `
+                    ${imagePosition === 'left' && imageUrl ? `
                         <div class="about-card-image">
-                            <img src="${card.image}" alt="${title}" draggable="false">
+                            <img src="${imageUrl}" alt="${title}" draggable="false">
                         </div>
                     ` : ''}
                     <div class="about-card-content">
                         <h3 class="about-card-title">${title}</h3>
                         <p class="about-card-description">${description}</p>
                     </div>
-                    ${imagePosition === 'right' && card.image ? `
+                    ${imagePosition === 'right' && imageUrl ? `
                         <div class="about-card-image">
-                            <img src="${card.image}" alt="${title}" draggable="false">
+                            <img src="${imageUrl}" alt="${title}" draggable="false">
                         </div>
                     ` : ''}
                 </div>
@@ -717,10 +718,7 @@ function updateAboutCarousel() {
         }
     });
 
-    // Update carousel position
-    const container = document.getElementById('aboutCarousel');
-    const cardWidth = container.clientWidth;
-    container.style.transform = `translateX(-${aboutCurrentIndex * cardWidth}px)`;
+    // Не используем transform - карточки переключаются через display: none/grid
 }
 
 function updateAboutNavButtons() {
