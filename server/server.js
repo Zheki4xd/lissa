@@ -489,60 +489,35 @@ app.get('/api/about-cards/:id', (req, res) => {
 });
 
 // Create new about card
-app.post('/api/about-cards', upload.array('images', 10), (req, res) => {
+app.post('/api/about-cards', upload.single('image'), (req, res) => {
     const { title, description, title_ru, description_ru, title_en, description_en, title_uk, description_uk } = req.body;
 
     if (!title_ru) {
         return res.status(400).json({ error: 'Russian title is required' });
     }
 
-    // Handle multiple images
-    const imageUrls = req.files && req.files.length > 0
-        ? req.files.map(file => `/uploads/${file.filename}`)
-        : [];
-    const imagesJson = JSON.stringify(imageUrls);
-    const firstImage = imageUrls.length > 0 ? imageUrls[0] : null;
+    const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
-    // Try with 'images' column first (new schema), fallback to 'image' (old schema)
     db.run(
-        `INSERT INTO about_cards (title, description, title_ru, description_ru, title_en, description_en, title_uk, description_uk, images, image)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [title || '', description || '', title_ru, description_ru || '', title_en || '', description_en || '', title_uk || '', description_uk || '', imagesJson, firstImage],
+        `INSERT INTO about_cards (title, description, title_ru, description_ru, title_en, description_en, title_uk, description_uk, image)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [title || '', description || '', title_ru, description_ru || '', title_en || '', description_en || '', title_uk || '', description_uk || '', imageUrl],
         function(err) {
             if (err) {
-                // If 'images' column doesn't exist, try old schema with only 'image'
-                if (err.message.includes('has no column named images')) {
-                    db.run(
-                        `INSERT INTO about_cards (title, description, title_ru, description_ru, title_en, description_en, title_uk, description_uk, image)
-                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                        [title || '', description || '', title_ru, description_ru || '', title_en || '', description_en || '', title_uk || '', description_uk || '', firstImage],
-                        function(fallbackErr) {
-                            if (fallbackErr) {
-                                console.error('Error creating about card (fallback):', fallbackErr);
-                                return res.status(500).json({ error: 'Failed to create about card' });
-                            }
-                            console.log('✅ Created card using OLD schema (image column)');
-                            res.json({ id: this.lastID, message: 'About card created successfully' });
-                        }
-                    );
-                } else {
-                    console.error('Error creating about card:', err);
-                    return res.status(500).json({ error: 'Failed to create about card' });
-                }
-            } else {
-                console.log('✅ Created card using NEW schema (images column)');
-                res.json({ id: this.lastID, message: 'About card created successfully' });
+                console.error('Error creating about card:', err);
+                return res.status(500).json({ error: 'Failed to create about card' });
             }
+            res.json({ id: this.lastID, message: 'About card created successfully' });
         }
     );
 });
 
 // Update about card
-app.put('/api/about-cards/:id', upload.array('images', 10), (req, res) => {
+app.put('/api/about-cards/:id', upload.single('image'), (req, res) => {
     const { id } = req.params;
-    const { title, description, title_ru, description_ru, title_en, description_en, title_uk, description_uk, existingImages, removedImages } = req.body;
+    const { title, description, title_ru, description_ru, title_en, description_en, title_uk, description_uk, removeImage } = req.body;
 
-    // Get current card
+    // Get current card to handle image deletion
     db.get('SELECT * FROM about_cards WHERE id = ?', [id], (err, currentCard) => {
         if (err) {
             console.error('Error fetching about card:', err);
@@ -552,91 +527,44 @@ app.put('/api/about-cards/:id', upload.array('images', 10), (req, res) => {
             return res.status(404).json({ error: 'About card not found' });
         }
 
-        // Parse existing images from DB (support both old 'image' and new 'images' columns)
-        let currentImages = [];
-        if (currentCard.images) {
-            try {
-                currentImages = JSON.parse(currentCard.images);
-            } catch (e) {
-                currentImages = [];
-            }
-        } else if (currentCard.image) {
-            // Backward compatibility: migrate old single image
-            currentImages = [currentCard.image];
-        }
+        let imageUrl = currentCard.image;
 
-        // Parse existingImages from request (images that weren't removed)
-        let keptImages = [];
-        if (existingImages) {
-            try {
-                keptImages = typeof existingImages === 'string' ? JSON.parse(existingImages) : existingImages;
-            } catch (e) {
-                keptImages = [];
-            }
-        }
-
-        // Parse removedImages (images to delete from filesystem)
-        let imagesToRemove = [];
-        if (removedImages) {
-            try {
-                imagesToRemove = typeof removedImages === 'string' ? JSON.parse(removedImages) : removedImages;
-            } catch (e) {
-                imagesToRemove = [];
-            }
-        }
-
-        // Delete removed images from filesystem
-        imagesToRemove.forEach(imgUrl => {
-            const imagePath = path.join(__dirname, '../public', imgUrl);
+        // Handle image deletion
+        if (removeImage === 'true' && currentCard.image) {
+            const imagePath = path.join(__dirname, '../public', currentCard.image);
             if (fs.existsSync(imagePath)) {
                 fs.unlinkSync(imagePath);
             }
-        });
+            imageUrl = null;
+        }
 
-        // Add new uploaded images
-        const newImageUrls = req.files && req.files.length > 0
-            ? req.files.map(file => `/uploads/${file.filename}`)
-            : [];
+        // Handle new image upload
+        if (req.file) {
+            // Delete old image if exists
+            if (currentCard.image) {
+                const oldImagePath = path.join(__dirname, '../public', currentCard.image);
+                if (fs.existsSync(oldImagePath)) {
+                    fs.unlinkSync(oldImagePath);
+                }
+            }
+            imageUrl = `/uploads/${req.file.filename}`;
+        }
 
-        // Combine kept images + new images
-        const finalImages = [...keptImages, ...newImageUrls];
-        const imagesJson = JSON.stringify(finalImages);
-        const firstImage = finalImages.length > 0 ? finalImages[0] : null;
-
-        // Try with 'images' column first (new schema), fallback to 'image' (old schema)
         db.run(
             `UPDATE about_cards SET
                 title = ?, description = ?, title_ru = ?, description_ru = ?,
-                title_en = ?, description_en = ?, title_uk = ?, description_uk = ?, images = ?, image = ?
+                title_en = ?, description_en = ?, title_uk = ?, description_uk = ?, image = ?
              WHERE id = ?`,
-            [title || '', description || '', title_ru, description_ru || '', title_en || '', description_en || '', title_uk || '', description_uk || '', imagesJson, firstImage, id],
+            [title || '', description || '', title_ru, description_ru || '', title_en || '', description_en || '', title_uk || '', description_uk || '', imageUrl, id],
             function(err) {
                 if (err) {
-                    // If 'images' column doesn't exist, try old schema with only 'image'
-                    if (err.message.includes('has no column named images')) {
-                        db.run(
-                            `UPDATE about_cards SET
-                                title = ?, description = ?, title_ru = ?, description_ru = ?,
-                                title_en = ?, description_en = ?, title_uk = ?, description_uk = ?, image = ?
-                             WHERE id = ?`,
-                            [title || '', description || '', title_ru, description_ru || '', title_en || '', description_en || '', title_uk || '', description_uk || '', firstImage, id],
-                            function(fallbackErr) {
-                                if (fallbackErr) {
-                                    console.error('Error updating about card (fallback):', fallbackErr);
-                                    return res.status(500).json({ error: 'Failed to update about card' });
-                                }
-                                console.log('✅ Updated card using OLD schema (image column)');
-                                res.json({ message: 'About card updated successfully' });
-                            }
-                        );
-                    } else {
-                        console.error('Error updating about card:', err);
-                        return res.status(500).json({ error: 'Failed to update about card' });
-                    }
-                } else {
-                    console.log('✅ Updated card using NEW schema (images column)');
-                    res.json({ message: 'About card updated successfully' });
+                    console.error('Error updating about card:', err);
+                    return res.status(500).json({ error: 'Failed to update about card' });
                 }
+                if (this.changes === 0) {
+                    return res.status(404).json({ error: 'About card not found' });
+                }
+                res.json({ message: 'About card updated successfully' });
             }
         );
     });
@@ -646,7 +574,7 @@ app.put('/api/about-cards/:id', upload.array('images', 10), (req, res) => {
 app.delete('/api/about-cards/:id', (req, res) => {
     const { id } = req.params;
 
-    // Get the card to delete its images
+    // Get the card to delete its image
     db.get('SELECT * FROM about_cards WHERE id = ?', [id], (err, card) => {
         if (err) {
             console.error('Error fetching about card:', err);
@@ -656,29 +584,13 @@ app.delete('/api/about-cards/:id', (req, res) => {
             return res.status(404).json({ error: 'About card not found' });
         }
 
-        // Delete all image files
-        let imagesToDelete = [];
-
-        // Try new 'images' column first
-        if (card.images) {
-            try {
-                imagesToDelete = JSON.parse(card.images);
-            } catch (e) {
-                imagesToDelete = [];
-            }
-        }
-        // Fallback to old 'image' column for backward compatibility
-        else if (card.image) {
-            imagesToDelete = [card.image];
-        }
-
-        // Delete each image file
-        imagesToDelete.forEach(imgUrl => {
-            const imagePath = path.join(__dirname, '../public', imgUrl);
+        // Delete image file if exists
+        if (card.image) {
+            const imagePath = path.join(__dirname, '../public', card.image);
             if (fs.existsSync(imagePath)) {
                 fs.unlinkSync(imagePath);
             }
-        });
+        }
 
         // Delete the card from database
         db.run('DELETE FROM about_cards WHERE id = ?', [id], function(err) {
