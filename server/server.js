@@ -501,17 +501,38 @@ app.post('/api/about-cards', upload.array('images', 10), (req, res) => {
         ? req.files.map(file => `/uploads/${file.filename}`)
         : [];
     const imagesJson = JSON.stringify(imageUrls);
+    const firstImage = imageUrls.length > 0 ? imageUrls[0] : null;
 
+    // Try with 'images' column first (new schema), fallback to 'image' (old schema)
     db.run(
-        `INSERT INTO about_cards (title, description, title_ru, description_ru, title_en, description_en, title_uk, description_uk, images)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [title || '', description || '', title_ru, description_ru || '', title_en || '', description_en || '', title_uk || '', description_uk || '', imagesJson],
+        `INSERT INTO about_cards (title, description, title_ru, description_ru, title_en, description_en, title_uk, description_uk, images, image)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [title || '', description || '', title_ru, description_ru || '', title_en || '', description_en || '', title_uk || '', description_uk || '', imagesJson, firstImage],
         function(err) {
             if (err) {
-                console.error('Error creating about card:', err);
-                return res.status(500).json({ error: 'Failed to create about card' });
+                // If 'images' column doesn't exist, try old schema with only 'image'
+                if (err.message.includes('has no column named images')) {
+                    db.run(
+                        `INSERT INTO about_cards (title, description, title_ru, description_ru, title_en, description_en, title_uk, description_uk, image)
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                        [title || '', description || '', title_ru, description_ru || '', title_en || '', description_en || '', title_uk || '', description_uk || '', firstImage],
+                        function(fallbackErr) {
+                            if (fallbackErr) {
+                                console.error('Error creating about card (fallback):', fallbackErr);
+                                return res.status(500).json({ error: 'Failed to create about card' });
+                            }
+                            console.log('✅ Created card using OLD schema (image column)');
+                            res.json({ id: this.lastID, message: 'About card created successfully' });
+                        }
+                    );
+                } else {
+                    console.error('Error creating about card:', err);
+                    return res.status(500).json({ error: 'Failed to create about card' });
+                }
+            } else {
+                console.log('✅ Created card using NEW schema (images column)');
+                res.json({ id: this.lastID, message: 'About card created successfully' });
             }
-            res.json({ id: this.lastID, message: 'About card created successfully' });
         }
     );
 });
@@ -580,22 +601,42 @@ app.put('/api/about-cards/:id', upload.array('images', 10), (req, res) => {
         // Combine kept images + new images
         const finalImages = [...keptImages, ...newImageUrls];
         const imagesJson = JSON.stringify(finalImages);
+        const firstImage = finalImages.length > 0 ? finalImages[0] : null;
 
+        // Try with 'images' column first (new schema), fallback to 'image' (old schema)
         db.run(
             `UPDATE about_cards SET
                 title = ?, description = ?, title_ru = ?, description_ru = ?,
-                title_en = ?, description_en = ?, title_uk = ?, description_uk = ?, images = ?
+                title_en = ?, description_en = ?, title_uk = ?, description_uk = ?, images = ?, image = ?
              WHERE id = ?`,
-            [title || '', description || '', title_ru, description_ru || '', title_en || '', description_en || '', title_uk || '', description_uk || '', imagesJson, id],
+            [title || '', description || '', title_ru, description_ru || '', title_en || '', description_en || '', title_uk || '', description_uk || '', imagesJson, firstImage, id],
             function(err) {
                 if (err) {
-                    console.error('Error updating about card:', err);
-                    return res.status(500).json({ error: 'Failed to update about card' });
+                    // If 'images' column doesn't exist, try old schema with only 'image'
+                    if (err.message.includes('has no column named images')) {
+                        db.run(
+                            `UPDATE about_cards SET
+                                title = ?, description = ?, title_ru = ?, description_ru = ?,
+                                title_en = ?, description_en = ?, title_uk = ?, description_uk = ?, image = ?
+                             WHERE id = ?`,
+                            [title || '', description || '', title_ru, description_ru || '', title_en || '', description_en || '', title_uk || '', description_uk || '', firstImage, id],
+                            function(fallbackErr) {
+                                if (fallbackErr) {
+                                    console.error('Error updating about card (fallback):', fallbackErr);
+                                    return res.status(500).json({ error: 'Failed to update about card' });
+                                }
+                                console.log('✅ Updated card using OLD schema (image column)');
+                                res.json({ message: 'About card updated successfully' });
+                            }
+                        );
+                    } else {
+                        console.error('Error updating about card:', err);
+                        return res.status(500).json({ error: 'Failed to update about card' });
+                    }
+                } else {
+                    console.log('✅ Updated card using NEW schema (images column)');
+                    res.json({ message: 'About card updated successfully' });
                 }
-                if (this.changes === 0) {
-                    return res.status(404).json({ error: 'About card not found' });
-                }
-                res.json({ message: 'About card updated successfully' });
             }
         );
     });
